@@ -1,0 +1,15 @@
+name = "timeroom-app"
+main = "src/index.js"
+type = "javascript"
+
+account_id = "072f19c35a3777a3d50070e532e62c49"
+workers_dev = true
+compatibility_date = "2026-01-15"
+
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[[kv_namespaces]]
+binding = "TIMEROOM_KV"
+id = "b0ecc015056542a4aa9d3f4e431faa40"
+preview_id = "b0ecc015056542a4aa9d3f4e431faa40"
