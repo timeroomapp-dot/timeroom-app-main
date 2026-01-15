@@ -13,7 +13,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #135deg, #667eea 0%, #764ba2 100%);
       color: white;
       min-height: 100vh;
       display: flex;
@@ -31,91 +31,67 @@
     .logo {
       font-size: 80px;
       margin-bottom: 20px;
-      animation: float 3s ease-in-out infinite;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-20px); }
     }
 
     h1 {
-      font-size: 48px;
+      font-size: 2.5em;
       margin-bottom: 10px;
-      font-weight: 700;
     }
 
-    .subtitle {
-      font-size: 20px;
-      margin-bottom: 40px;
-      opacity: 0.9;
-      font-weight: 300;
+    #status {
+      font-size: 1.2em;
+      margin-bottom: 30px;
+      min-height: 30px;
     }
 
-    .buttons {
-      display: flex;
-      gap: 15px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 40px;
+    .controls {
+      margin-bottom: 30px;
     }
 
-    a, button {
-      padding: 14px 30px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: 600;
+    select, button {
+      padding: 10px 20px;
+      font-size: 1em;
       border: none;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      font-size: 16px;
-    }
-
-    a:hover, button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn-primary {
-      background: white;
-      color: #667eea;
-    }
-
-    .btn-secondary {
+      border-radius: 5px;
       background: rgba(255, 255, 255, 0.2);
       color: white;
-      border: 2px solid white;
+      cursor: pointer;
+      margin: 5px;
     }
 
-    .features {
+    button {
+      background: rgba(255, 255, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: rgba(255, 255, 255, 0.5);
+      transform: translateY(-2px);
+    }
+
+    #events {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-top: 60px;
-      padding-top: 40px;
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      gap: 15px;
+      margin-top: 20px;
     }
 
-    .feature {
-      padding: 20px;
+    .event {
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(10px);
     }
 
-    .feature-icon {
-      font-size: 40px;
-      margin-bottom: 10px;
-    }
-
-    .feature-title {
-      font-size: 18px;
+    .event strong {
+      display: block;
+      font-size: 1.1em;
       margin-bottom: 8px;
-      font-weight: 600;
     }
 
-    .feature-desc {
-      font-size: 14px;
+    .event em {
+      display: block;
+      font-size: 0.9em;
       opacity: 0.9;
     }
   </style>
@@ -124,45 +100,88 @@
   <div class="container">
     <div class="logo">⏰</div>
     <h1>Timeroom</h1>
-    <p class="subtitle">AI Time Orchestrator - Manage Your Time Efficiently</p>
+    <div id="status">Loading...</div>
     
-    <div class="buttons">
-      <a href="/login.html" class="btn-primary">Sign In</a>
-      <a href="#features" class="btn-secondary">Learn More</a>
+    <div class="controls">
+      <select id="days">
+        <option value="7">Next 7 days</option>
+        <option value="14">Next 14 days</option>
+        <option value="30">Next 30 days</option>
+      </select>
+      <button id="reload">Refresh</button>
     </div>
 
-    <div class="features" id="features">
-      <div class="feature">
-        <div class="feature-icon">🤖</div>
-        <div class="feature-title">AI Powered</div>
-        <div class="feature-desc">Intelligent time management powered by AI</div>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">📅</div>
-        <div class="feature-title">Calendar Sync</div>
-        <div class="feature-desc">Seamless integration with your calendar</div>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">⚡</div>
-        <div class="feature-title">Real-time Sync</div>
-        <div class="feature-desc">Instant updates across all devices</div>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">🔐</div>
-        <div class="feature-title">Secure Auth</div>
-        <div class="feature-desc">Google OAuth for secure authentication</div>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">📊</div>
-        <div class="feature-title">Analytics</div>
-        <div class="feature-desc">Track your time usage with detailed insights</div>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">🚀</div>
-        <div class="feature-title">Fast & Reliable</div>
-        <div class="feature-desc">Built on Cloudflare for maximum performance</div>
-      </div>
-    </div>
+    <div id="events"></div>
   </div>
+
+  <script>
+    const WORKER = "https://timeroom-oauth.timeroomapp.workers.dev";
+    const statusEl = document.getElementById("status");
+    const eventsEl = document.getElementById("events");
+    const daysEl = document.getElementById("days");
+    const reloadBtn = document.getElementById("reload");
+
+    function getParams() {
+      const hash = window.location.hash.replace(/^#/, "");
+      return new URLSearchParams(hash);
+    }
+
+    function getEmail() {
+      const params = getParams();
+      const email = params.get("email");
+      return email && email.trim() ? email : null;
+    }
+
+    async function loadEvents(email) {
+      statusEl.textContent = "Loading events…";
+      eventsEl.innerHTML = "";
+      
+      try {
+        const res = await fetch(
+          `${WORKER}/events?email=${encodeURIComponent(email)}&days=${daysEl.value}`
+        );
+        const data = await res.json();
+        
+        if (!res.ok || !data.ok) {
+          statusEl.textContent = "Failed to load events";
+          return;
+        }
+        
+        if (!data.items.length) {
+          statusEl.textContent = "No upcoming events";
+          return;
+        }
+        
+        statusEl.textContent = "Upcoming events";
+        data.items.forEach(e => {
+          const div = document.createElement("div");
+          div.className = "event";
+          div.innerHTML = `
+            <strong>${e.summary}</strong>
+            <em>${new Date(e.start).toLocaleString()}</em>
+          `;
+          eventsEl.appendChild(div);
+        });
+      } catch (error) {
+        statusEl.textContent = "Error loading events";
+        console.error(error);
+      }
+    }
+
+    function init() {
+      const email = getEmail();
+      if (!email) {
+        statusEl.textContent = "Not connected";
+        return;
+      }
+      
+      statusEl.textContent = `Connected as ${email}`;
+      loadEvents(email);
+      reloadBtn.onclick = () => loadEvents(email);
+    }
+
+    window.addEventListener("DOMContentLoaded", init);
+    window.addEventListener("hashchange", init);
+  </script>
 </body>
 </html>
