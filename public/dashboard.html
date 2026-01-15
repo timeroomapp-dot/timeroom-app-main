@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeroom - Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    header {
+      background: white;
+      padding: 20px 40px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 24px;
+      color: #667eea;
+    }
+
+    .logout-btn {
+      background: #ff6b6b;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: #ff5252;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    .status {
+      padding: 15px;
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      border-radius: 4px;
+      color: #2e7d32;
+      margin-bottom: 20px;
+    }
+
+    .time-display {
+      font-size: 48px;
+      font-weight: 700;
+      color: #667eea;
+      text-align: center;
+      padding: 40px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .stat-item {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      border-top: 3px solid #667eea;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>⏰ Timeroom Dashboard</h1>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h2>Welcome to Your Time Management Hub</h2>
+      <div class="status" id="status">
+        🔄 Loading your data...
+      </div>
+
+      <div class="time-display" id="time-display">0h 0m</div>
+
+      <h2>Today's Statistics</h2>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-value" id="scheduled-tasks">0</div>
+          <div class="stat-label">Scheduled Tasks</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="completed-tasks">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="time-saved">0h</div>
+          <div class="stat-label">Time Saved</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="efficiency">0%</div>
+          <div class="stat-label">Efficiency</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Quick Actions</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+        <button style="padding: 10px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">➕ New Task</button>
+        <button style="padding: 10px; background: #4caf50; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">📅 Sync Calendar</button>
+        <button style="padding: 10px; background: #ff9800; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">⚡ AI Optimization</button>
+        <button style="padding: 10px; background: #2196f3; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">⚙️ Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function logout() {
+      fetch('/api/auth/logout')
+        .then(() => {
+          window.location.href = '/login.html';
+        })
+        .catch(error => {
+          console.error('Logout error:', error);
+          window.location.href = '/';
+        });
+    }
+
+    async function checkStatus() {
+      try {
+        const response = await fetch('/api/user');
+        const data = await response.json();
+        
+        if (!data.user) {
+          setTimeout(() => {
+            window.location.href = '/login.html';
+          }, 2000);
+        } else {
+          document.getElementById('status').innerHTML = '✅ Welcome, ' + (data.user.name || 'User') + '!';
+        }
+      } catch (error) {
+        document.getElementById('status').textContent = '⚠️ ' + error.message;
+      }
+    }
+
+    // Initialize dashboard
+    checkStatus();
+  </script>
+</body>
+</html>
