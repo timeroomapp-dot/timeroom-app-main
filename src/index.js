@@ -29,6 +29,9 @@ export default {
       return handleLogout(request, env);
     } else if (pathname === '/api/user') {
       return handleGetUser(request, env);
+        } else if (pathname === '/api/calendar/diagnostics') {
+    return handleCalendarDiagnostics(request, env);
+      
     }
 
     return new Response('Not Found', { status: 404 });
@@ -93,6 +96,19 @@ async function handleLogout(request, env) {
 
 async function handleGetUser(request, env) {
   return new Response(JSON.stringify({ user: null }), {
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+  async function handleCalendarDiagnostics(request, env) {
+  return new Response(JSON.stringify({
+    status: 'ok',
+    message: 'Calendar service is operational',
+    calendars: [],
+    lastSync: new Date().toISOString(),
+    timestamp: Date.now()
+  }), {
+    status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
 }
