@@ -1,0 +1,14 @@
+{
+  "name": "timeroom-app",
+  "version": "1.0.0",
+  "description": "Timeroom - AI Time Orchestrator",
+  "main": "worker.js",
+  "scripts": {
+    "dev": "wrangler pages dev ./public",
+    "build": "echo Building...",
+    "deploy": "wrangler pages publish ./public"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
